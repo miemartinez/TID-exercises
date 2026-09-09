@@ -1,5 +1,5 @@
 export default function ToDoList({ firstName, todos }) {
-  let h1style = { color: "deeppink" };
+  let h1style = { color: "deeppink", backgroundColor: "lightblue" };
 
   function handleAdd(event) {
     console.log("We should add a new item");

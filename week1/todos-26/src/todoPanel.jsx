@@ -1,4 +1,4 @@
-export default function ToDoPanel({ firstName, lastName, children }) {
+export default function ToDoPanel({ firstName, children }) {
   let h1style = { color: "deeppink" };
 
   return (
