@@ -1,62 +1,90 @@
 import { useState, useEffect } from "react";
-import NewTodoForm from "./NewTodoForm.jsx";
-import TodoItem from "./TodoItem.jsx";
+import NewTodoForm from "./NewTodoForm";
+import ToDoItem from "./ToDoItem";
+import NewListForm from "./NewListForm";
 import {
   fetchTodos,
   createTodo,
   setTodoDone,
   deleteTodo,
-} from "../service/todoService.js";
+  fetchTodosForList,
+} from "../service/todoService";
+import { createList, fetchLists } from "../service/listService";
 
-export default function ToDoList({ listTitle, userId }) {
-  let h1Style = { color: "deeppink", backgroundColor: "white" };
-  const [todos, setTodos] = useState([]);
+export default function ToDoList({ listTitle }) {
+  const [todoList, setTodoList] = useState([]);
+  const [lists, setLists] = useState([]);
 
   useEffect(() => {
     async function load() {
-      const todos = await fetchTodos();
+      const allLists = await fetchLists();
+      setLists(allLists);
 
-      const userTodos = todos.filter((todo) => todo.owner === userId);
-
-      setTodos(userTodos);
+      const allTodos = [];
+      // here we have to use allLists even though we updated the state of lists as this is not immediately updated - why is that??
+      for (const list of allLists) {
+        const todos = await fetchTodosForList(list);
+        allTodos.push(...todos);
+      }
+      setTodoList(allTodos);
     }
     load();
-  }, [userId]);
+  }, []);
 
-  async function handleAdd(text) {
-    const created = await createTodo(text);
-    setTodos([...todos, created]);
+  async function handleAdd(text, list) {
+    const newToDo = await createTodo(text, list);
+    setTodoList([...todoList, newToDo]);
   }
 
-  async function handleDelete(idToDelete) {
-    await deleteTodo(idToDelete);
-    setTodos(todos.filter((each) => each.id !== idToDelete));
+  async function handleAddList(name) {
+    const created = await createList(name);
+    setLists([...lists, created]);
   }
 
   async function handleToggle(id) {
-    const todo = todos.find((t) => t.id === id);
+    const todo = todoList.find((t) => t.id === id);
     await setTodoDone(id, !todo.done);
-    setTodos(todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+    setTodoList(
+      todoList.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
+    );
+  }
+
+  async function handleRemove(idToDelete) {
+    await deleteTodo(idToDelete);
+    setTodoList(todoList.filter((todo) => todo.id !== idToDelete));
   }
 
   return (
     <div className="todo-body">
       <h1>{listTitle}</h1>
 
-      <NewTodoForm onAdd={handleAdd} />
-
-      {todos.length === 0 ? (
-        <p>Nothing to do. Enjoy the afternoon!</p>
+      <NewListForm onAdd={handleAddList} />
+      {lists.length === 0 ? (
+        <p>No lists yet.</p>
       ) : (
         <ul>
-          {todos.map((todo) => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              onRemove={handleDelete}
-              onToggle={handleToggle}
-            />
-          ))}
+          {lists.map(
+            (
+              list, //list is not a plain js object so we can't write list.name and instead have to .get() from the db
+            ) => (
+              <li key={list.id}>
+                <h2>{list.get("name")}</h2>
+                <NewTodoForm list={list} onAdd={handleAdd} />
+                <ul>
+                  {todoList
+                    .filter((todo) => todo.list === list.id)
+                    .map((todo) => (
+                      <ToDoItem
+                        key={todo.id}
+                        todo={todo}
+                        onToggle={handleToggle}
+                        onRemove={handleRemove}
+                      />
+                    ))}
+                </ul>
+              </li>
+            ),
+          )}
         </ul>
       )}
     </div>

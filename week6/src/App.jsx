@@ -29,7 +29,7 @@ function App() {
   }
   return (
     <>
-      <ToDoList listTitle={"My todo list"} userId={user.id} />
+      <ToDoList listTitle={"My todo lists"} />
       <button onClick={handleLogout}>Logout </button>
     </>
   );
