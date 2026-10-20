@@ -3,6 +3,8 @@ import ToDoList from "./components/ToDoList";
 import "parse/dist/parse.min.js";
 import { useState } from "react";
 import AuthPage from "./pages/AuthPage";
+import ListPage from "./pages/ListPage";
+import { Routes, Route } from "react-router-dom";
 
 const Parse = window.Parse;
 
@@ -28,10 +30,13 @@ function App() {
     return <AuthPage onAuthenticated={handleAuthenticated} />;
   }
   return (
-    <>
-      <ToDoList listTitle={"My todo lists"} />
+    <div className="main-inner">
+      <Routes>
+        <Route path="/" element={<ToDoList listTitle={"My todo lists"} />} />
+        <Route path="/lists/:listId" element={<ListPage />} />
+      </Routes>
       <button onClick={handleLogout}>Logout </button>
-    </>
+    </div>
   );
 }
 

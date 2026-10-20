@@ -10,6 +10,7 @@ import {
   fetchTodosForList,
 } from "../service/todoService";
 import { createList, fetchLists } from "../service/listService";
+import { Link } from "react-router-dom";
 
 export default function ToDoList({ listTitle }) {
   const [todoList, setTodoList] = useState([]);
@@ -31,28 +32,28 @@ export default function ToDoList({ listTitle }) {
     load();
   }, []);
 
-  async function handleAdd(text, list) {
-    const newToDo = await createTodo(text, list);
-    setTodoList([...todoList, newToDo]);
-  }
+  // async function handleAdd(text, list) {
+  //   const newToDo = await createTodo(text, list);
+  //   setTodoList([...todoList, newToDo]);
+  // }
 
   async function handleAddList(name) {
     const created = await createList(name);
     setLists([...lists, created]);
   }
 
-  async function handleToggle(id) {
-    const todo = todoList.find((t) => t.id === id);
-    await setTodoDone(id, !todo.done);
-    setTodoList(
-      todoList.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
-    );
-  }
+  // async function handleToggle(id) {
+  //   const todo = todoList.find((t) => t.id === id);
+  //   await setTodoDone(id, !todo.done);
+  //   setTodoList(
+  //     todoList.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
+  //   );
+  // }
 
-  async function handleRemove(idToDelete) {
-    await deleteTodo(idToDelete);
-    setTodoList(todoList.filter((todo) => todo.id !== idToDelete));
-  }
+  // async function handleRemove(idToDelete) {
+  //   await deleteTodo(idToDelete);
+  //   setTodoList(todoList.filter((todo) => todo.id !== idToDelete));
+  // }
 
   return (
     <div className="todo-body">
@@ -68,20 +69,9 @@ export default function ToDoList({ listTitle }) {
               list, //list is not a plain js object so we can't write list.name and instead have to .get() from the db
             ) => (
               <li key={list.id}>
-                <h2>{list.get("name")}</h2>
-                <NewTodoForm list={list} onAdd={handleAdd} />
-                <ul>
-                  {todoList
-                    .filter((todo) => todo.list === list.id)
-                    .map((todo) => (
-                      <ToDoItem
-                        key={todo.id}
-                        todo={todo}
-                        onToggle={handleToggle}
-                        onRemove={handleRemove}
-                      />
-                    ))}
-                </ul>
+                <h2>
+                  <Link to={`/lists/${list.id}`}>{list.get("name")}</Link>
+                </h2>
               </li>
             ),
           )}
